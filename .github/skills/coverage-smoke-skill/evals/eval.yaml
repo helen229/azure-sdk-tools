@@ -1,0 +1,22 @@
+name: coverage-smoke-routing
+description: A starter Eval fixture for the deterministic coverage-presence smoke test.
+type: capability
+
+tags:
+  area: coverage-smoke-skill
+  type: ci-gate
+
+defaults:
+  runs: 1
+  timeout: "30s"
+
+stimuli:
+  - name: trigger-explain-coverage-smoke-skill
+    prompt: "Explain what the coverage smoke skill fixture is for."
+    environment:
+      skills:
+        - ..
+    graders:
+      - type: skill-invocation
+        config:
+          required: ["coverage-smoke-skill"]
