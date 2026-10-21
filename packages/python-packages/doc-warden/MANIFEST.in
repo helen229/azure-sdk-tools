@@ -1,2 +1,0 @@
-include *.md
-include warden/__init__.py

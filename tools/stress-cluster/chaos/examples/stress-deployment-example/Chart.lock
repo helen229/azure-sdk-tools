@@ -1,6 +1,0 @@
-dependencies:
-- name: stress-test-addons
-  repository: https://azuresdkartifacts.z5.web.core.windows.net/stress/
-  version: 0.3.7
-digest: sha256:8531613ff96caebdf6524ea5920b3a9ff971462868802a61ef20cf2f4b303a69
-generated: "2026-05-06T13:36:41.658302732-04:00"

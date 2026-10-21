@@ -1,9 +1,0 @@
-dependencies:
-- name: chaos-mesh
-  repository: https://charts.chaos-mesh.org
-  version: 2.6.3
-- name: stress-test-addons
-  repository: https://azuresdkartifacts.z5.web.core.windows.net/stress/
-  version: 0.3.6
-digest: sha256:59900baffdd6033b2e8d2aff959d582f06f1232816b188a90edd360c6f2036e2
-generated: "2025-12-04T17:14:09.560750373-05:00"

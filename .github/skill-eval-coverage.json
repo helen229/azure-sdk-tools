@@ -1,0 +1,7 @@
+{
+  "skillsRoot": ".github/skills",
+  "pipelines": ["eng/pipelines/skill-coverage-smoke.yml"],
+  "workflow": ".github/workflows/skill-eval.yml",
+  "dashboardUrl": "https://azsdk-eval-bue6a7dwanatgpb3.westus3-01.azurewebsites.net/",
+  "authoringGuideUrl": "https://github.com/Azure/azure-sdk-tools/blob/main/.github/skills/eval-authoring/README.md"
+}

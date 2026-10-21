@@ -1,7 +1,0 @@
-{
-    "evaluators":[
-        "knowledge_match",
-        "reference_match"
-    ],
-    "testcases":[]
-}
