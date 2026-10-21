@@ -1,0 +1,24 @@
+{
+  "phase": "missing",
+  "pr": "https://github.com/helen229/azure-sdk-tools/pull/2",
+  "head": "5059afbb3f95b98ebc8522f8be3f17f1bb141525",
+  "sourceRun": 39647152294,
+  "sourceUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647152294",
+  "jobUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647152294/job/119385616924",
+  "coverage": "success",
+  "lint": "success",
+  "warningCount": 1,
+  "testFixtureWarnings": 0,
+  "reporterRun": 39647271439,
+  "reporterUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647271439",
+  "commentId": 6322718736,
+  "commentUrl": "https://github.com/helen229/azure-sdk-tools/pull/2#issuecomment-6322718736",
+  "commentUpdatedAt": "2026-10-21T17:50:05Z",
+  "buildDetails": true,
+  "dashboardLink": true,
+  "botOwnedComments": 1,
+  "changedFiles": [
+    ".github/skills/coverage-smoke-skill/SKILL.md"
+  ],
+  "unitTests": 75
+}

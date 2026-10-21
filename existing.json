@@ -1,0 +1,24 @@
+{
+  "phase": "existing",
+  "pr": "https://github.com/helen229/azure-sdk-tools/pull/3",
+  "head": "871f81dcede99482a2a679e2a4b20e00e36f4d32",
+  "sourceRun": 39647189215,
+  "sourceUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647189215",
+  "jobUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647189215/job/119385746248",
+  "coverage": "success",
+  "lint": "success",
+  "warningCount": 0,
+  "testFixtureWarnings": 0,
+  "reporterRun": 39647298570,
+  "reporterUrl": "https://github.com/helen229/azure-sdk-tools/actions/runs/39647298570",
+  "commentId": 6322722083,
+  "commentUrl": "https://github.com/helen229/azure-sdk-tools/pull/3#issuecomment-6322722083",
+  "commentUpdatedAt": "2026-10-21T17:50:16Z",
+  "buildDetails": true,
+  "dashboardLink": true,
+  "botOwnedComments": 1,
+  "changedFiles": [
+    ".github/skills/coverage-existing-skill/SKILL.md"
+  ],
+  "unitTests": 75
+}
