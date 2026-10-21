@@ -1,0 +1,6 @@
+# Discovery data only. This fixture is never registered as an Azure pipeline.
+parameters:
+  vallyRoot: .github/skills
+  evalGlobs:
+    - '*/evals/*.eval.yaml'
+    - '*/evals/eval.yaml'

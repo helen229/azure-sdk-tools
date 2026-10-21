@@ -1,4 +1,0 @@
-../apiview-stub-generator-test
-pytest
-build==1.2.2.post1
-trio

@@ -9,7 +9,7 @@ This folder exists solely to give the [Skill Evaluations GitHub Actions workflow
 ## Updating the Vally CLI version
 
 1. Bump `@microsoft/vally-cli` in `package.json`.
-2. Run `npm install` locally to refresh `package-lock.json`.
+2. Run `npm install --package-lock-only --registry https://registry.npmjs.org/` to refresh `package-lock.json`.
 3. Commit both files in the same PR. The workflow's path triggers include `eng/skill-eval/**`, so CI will re-run `vally lint` against the new version automatically.
 
 ## Local skill linting
@@ -26,3 +26,13 @@ cd ../..
 This matches the CI job step-for-step, so a green local run on the current lockfile means a green CI run.
 
 A global install (`npm install -g @microsoft/vally-cli@<version>`) still works for ad-hoc iteration, but it won't match the transitive dependency tree CI uses and isn't a substitute for the steps above when validating a version bump.
+
+## Skill Eval coverage warnings
+
+The same workflow also runs the separate
+[skill Eval coverage checker](../common/scripts/skill-eval-coverage/README.md).
+It reports whether changed skills have discoverable Evals; it does not run those
+Evals. Missing coverage is warning-only, and the existing lint job remains blocking.
+A trusted follow-up workflow updates one PR comment for either outcome, including
+the Eval dashboard and authoring-guide links. See the checker guide for local
+commands, discovery configuration, fork safety and rollout limits.

@@ -1,0 +1,22 @@
+name: existing-skill-coverage-smoke
+description: Starter Eval fixture that remains unchanged in the existing-skill-only test.
+type: capability
+
+tags:
+  area: coverage-existing-skill
+  type: ci-gate
+
+defaults:
+  runs: 1
+  timeout: "30s"
+
+stimuli:
+  - name: trigger-explain-existing-skill
+    prompt: "Explain the existing skill coverage smoke fixture."
+    environment:
+      skills:
+        - ..
+    graders:
+      - type: skill-invocation
+        config:
+          required: ["coverage-existing-skill"]
