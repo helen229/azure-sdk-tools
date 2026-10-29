@@ -226,9 +226,10 @@ test("compiled pilot is manual, no-write, bare-context and cannot succeed withou
 test("actual CLI uses an immutable snapshot, isolates summaries and rejects malformed or duplicate reports", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "semantic-review-cli-"));
     const script = fileURLToPath(new URL("../review.ts", import.meta.url));
-    const env = { ...process.env };
+    const env: NodeJS.ProcessEnv = { ...process.env,
+        GITHUB_RUN_ID: "inherited-parent-run", GITHUB_RUN_ATTEMPT: "99" };
     for (const name of ["GITHUB_ACTIONS", "GITHUB_OUTPUT", "GITHUB_STEP_SUMMARY", "GITHUB_SHA", "GITHUB_REPOSITORY",
-        "SEMANTIC_SKILL", "GH_AW_AGENT_OUTPUT", "NODE_TEST_CONTEXT"]) delete env[name];
+        "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "SEMANTIC_SKILL", "GH_AW_AGENT_OUTPUT", "NODE_TEST_CONTEXT"]) delete env[name];
     try {
         for (const [file, value] of Object.entries(contents)) {
             fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
@@ -254,6 +255,7 @@ test("actual CLI uses an immutable snapshot, isolates summaries and rejects malf
         const saved = JSON.parse(fs.readFileSync(path.join(outputDirectory, "report.json"), "utf8"));
         assert.equal(saved.provenance.inputHash, input.inputHash);
         assert.equal(saved.provenance.runId, null);
+        assert.equal(saved.provenance.runAttempt, null);
         assert.equal(saved.report.total, 0);
         assert(!fs.existsSync(path.join(root, "summary.md")));
         fs.writeFileSync(outputFile, JSON.stringify({ items: [item, item] }));
