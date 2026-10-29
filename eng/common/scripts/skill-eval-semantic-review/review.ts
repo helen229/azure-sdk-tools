@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
@@ -17,6 +18,7 @@ export const RUBRIC = { representation: 40, assertions: 30, negativeCases: 20, a
 export const RUBRIC_VERSION = "semantic-quality-pilot/v1";
 const MAX_SOURCES = 24;
 const MAX_CAPABILITIES = 20;
+const { parseDocument } = createRequire(new URL("../skill-eval-coverage/package.json", import.meta.url))("yaml");
 
 export interface Source {
     path: string;
@@ -147,8 +149,22 @@ function evidence(value: unknown, input: ReviewInput): asserts value is Evidence
         assert(source, "Citation references a file outside the supplied snapshot.");
         const line = source.lines[Number(citation.line) - 1]?.text;
         assert(typeof line === "string" && !/[\r\n]/.test(citation.quote) && line.includes(citation.quote),
-            "Citation quote does not match the cited source line.");
+            `Citation quote does not match ${citation.path}:${citation.line}; use an exact substring.`);
     }
+}
+
+export function parseReport(value: unknown, input: ReviewInput): SemanticReport {
+    text(value, MAX_REPORT_BYTES);
+    assert(Buffer.byteLength(value, "utf8") <= MAX_REPORT_BYTES, "Report exceeds its byte limit.");
+    const document = parseDocument(value, { version: "1.2", schema: "core", uniqueKeys: true });
+    const issue = document.errors[0] ?? document.warnings[0];
+    assert(document.errors.length === 0 && document.warnings.length === 0,
+        "Expected one valid data-only YAML or JSON report, without duplicate keys or custom tags. " +
+        (issue ? String(issue.message).split("\n")[0] : ""));
+    let parsed: unknown;
+    try { parsed = document.toJS({ maxAliasCount: 0 }); }
+    catch { throw new assert.AssertionError({ message: "Report aliases are not allowed." }); }
+    return validateReport(parsed, input);
 }
 
 export function validateReport(value: unknown, input: ReviewInput): SemanticReport {
@@ -176,7 +192,7 @@ export function validateReport(value: unknown, input: ReviewInput): SemanticRepo
             const citations = capability.evidence.filter((citation) => input.files.some((file) =>
                 file.path === citation.path && file.role === "eval"));
             assert(new Set(citations.map((citation) => `${citation.path}:${citation.line}`)).size >= 2,
-                "Represented coverage needs separate Eval scenario and assertion citations.");
+                `Represented coverage needs separate Eval scenario and assertion citations for ${capability.name}.`);
         }
         assert(Array.isArray(capability.suggestions) && capability.suggestions.length <= 3,
             "Expected bounded scenario/assertion suggestions.");
@@ -212,6 +228,14 @@ export function validateReport(value: unknown, input: ReviewInput): SemanticRepo
         if (!input.presence?.evals.length) assert(total === 0, "An empty Eval inventory cannot earn coverage quality points.");
     }
     return value as unknown as SemanticReport;
+}
+
+export function preflightReport(value: unknown, input: ReviewInput): { valid: boolean; error?: string } {
+    try { parseReport(value, input); return { valid: true }; }
+    catch (error) {
+        const message = error instanceof assert.AssertionError ? error.message : "Report decoding failed.";
+        return { valid: false, error: message.replace(/[\r\n]/g, " ").slice(0, 180) };
+    }
 }
 
 function escape(value: string): string {
@@ -263,7 +287,16 @@ function readJson(file: string, maximum: number): unknown {
 
 export async function main(argv: string[]): Promise<void> {
     const mode = argv[0];
-    assert(mode === "prepare" || mode === "report", "Choose prepare or report.");
+    if (mode === "preflight") {
+        assert(argv.length === 1 && process.env.SEMANTIC_INPUT_FILE, "Preflight requires a prepared input file.");
+        const input = readJson(process.env.SEMANTIC_INPUT_FILE, MAX_INPUT_BYTES);
+        assert(record(input) && input.schema === "semantic-input/v1" && Array.isArray(input.files), "Expected a prepared input snapshot.");
+        const hash = createHash("sha256").update(encoded({ ...input, inputHash: "" })).digest("hex");
+        assert(input.inputHash === hash, "Prepared input identity does not match its contents.");
+        process.stdout.write(encoded(preflightReport(process.env.INPUT_REPORT, input as unknown as ReviewInput)) + "\n");
+        return;
+    }
+    assert(mode === "prepare" || mode === "report", "Choose prepare, preflight or report.");
     const { values } = parseArgs({ args: argv.slice(1), options: {
         "repo-root": { type: "string", default: "." }, revision: { type: "string" },
         skill: { type: "string" }, repository: { type: "string" }, "agent-output": { type: "string" },
@@ -278,6 +311,10 @@ export async function main(argv: string[]): Promise<void> {
     const input = await buildInput(gitSnapshot(root, revision), skill, revision, repo);
     if (mode === "prepare") {
         const json = encoded(input);
+        if (values["output-dir"]) {
+            fs.mkdirSync(values["output-dir"], { recursive: true });
+            fs.writeFileSync(path.join(values["output-dir"], "input.json"), json + "\n");
+        }
         if (process.env.GITHUB_ACTIONS === "true") {
             assert(process.env.GITHUB_OUTPUT, "GitHub output path is unavailable.");
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `snapshot=${json}\n`);
@@ -291,11 +328,7 @@ export async function main(argv: string[]): Promise<void> {
         "Expected exactly one structured semantic report output.");
     const item = output.items[0];
     assert(record(item) && item.type === "semantic_report", "Expected the semantic_report output type.");
-    text(item.report, MAX_REPORT_BYTES);
-    let parsed: unknown;
-    try { parsed = JSON.parse(item.report); }
-    catch { throw new Error("Semantic report is not valid JSON."); }
-    const report = validateReport(parsed, input);
+    const report = parseReport(item.report, input);
     const markdown = renderReport(report, input);
     const directory = values["output-dir"] ?? path.join(process.env.RUNNER_TEMP ?? "", "skill-eval-semantic-review");
     assert(values["output-dir"] || process.env.RUNNER_TEMP, "An output directory is required outside Actions.");

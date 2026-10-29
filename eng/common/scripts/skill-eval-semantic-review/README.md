@@ -42,6 +42,10 @@ duplicate reports and unsupported evidence. These structural checks do not prove
 that the LLM's interpretation or score is correct. The score is a quality estimate,
 not measured coverage, exhaustive analysis, proof of passing Evals, or a merge gate.
 
+The report tool transports one bounded, data-only YAML document; valid JSON remains
+accepted for saved reports. Duplicate keys, aliases, custom tags, multiple documents,
+invalid citations and invalid score arithmetic are rejected.
+
 ## Workflow and safety
 
 [Workflow source](../../../../.github/workflows/skill-eval-semantic-review.md) is
@@ -51,8 +55,13 @@ never hand-edit generated pins or YAML. The existing offline script-test workflo
 recompiles and checks for drift without invoking inference.
 
 The agent has no checkout, GitHub tools, shell/edit tools, web tools, or ambient
-repository instructions. Network access is restricted by the framework. Its sole
-domain tool submits a report to a separate data-validation job. All jobs have no
+repository instructions. Network access is restricted by the framework. Its domain
+tools are a read-only `validate_semantic_report` preflight and final `semantic_report`
+submission to a separate data-validation job. The preflight uses only the prepared
+snapshot and trusted validator code staged by deterministic setup. It has no secrets,
+network calls, file writes, or arbitrary-command inputs. The final job independently
+revalidates submitted text; a successful preflight is not a publication authority.
+All jobs have no
 GitHub write scopes; automatic issue, comment, missing-data and failure publication
 are explicitly disabled, including threat-detection reporting. The framework's
 threat detector stays enabled and fail-closed. A final job requires a successfully
@@ -64,10 +73,12 @@ repository, immutable source revision, input SHA-256, rubric version, run ID and
 attempt. Actual engine/model and usage evidence remain in the framework artifacts;
 do not infer the executed model or dollar cost from the model's own response.
 
-The requested model is `gpt-5.4-mini`, with 6 agent turns, 8 execution minutes,
+The candidate model is `gpt-5.6-terra`, with 6 agent turns, 8 execution minutes,
 50 agent AI credits and 20 detection AI credits configured. These are framework
-controls, not a separately verified total-spend guarantee. Actual model access,
-reported cost, and hosted enforcement must be checked in the first real run.
+controls, not a separately verified total-spend guarantee. Actual hosted model access,
+reported cost, and hosted enforcement must be checked in the first GitHub run. Local
+trials verified this model through the Copilot SDK; they do not establish its
+availability for a different account or Actions policy.
 
 The repository pins actionlint 1.7.12. Its two unsupported gh-aw extension fields
 (`concurrency.queue`, `job.workflow_ref`) have exact, generated-file-only syntax
@@ -92,6 +103,45 @@ single-item `semantic_report` envelope and re-reads the immutable Git evidence b
 writing output. Local commands do not update a GitHub summary unless actually running
 under Actions. Unit tests include a temporary Git repository and real CLI subprocesses;
 they do not call a model or execute the supplied skill text.
+
+## Local model rehearsal
+
+The local runner uses the workflow's exact domain prompt, model selection, tool
+descriptions, immutable snapshot builder, read-only preflight, and deferred report
+validator. It uses standard existing Copilot CLI authentication, without reading,
+printing, or extracting a token. Inference is hosted by Copilot, not an offline model.
+Only the two review tools are enabled; ambient instructions and built-in MCPs are
+disabled. Preflight is limited to three drafts. The session is explicitly aborted
+after a report is queued or the validation limit is reached, with a forced-stop
+fallback. A queued report is not successful until the actual report CLI accepts it.
+
+Install the exact local runtime outside the repository, then use a new result directory:
+
+```powershell
+$runtime = Join-Path $env:TEMP 'semantic-review-runtime'
+npm.cmd install --prefix $runtime --no-save --no-package-lock --ignore-scripts --no-audit --no-fund @github/copilot-sdk@1.0.28 @github/copilot@1.0.80
+$results = Join-Path $env:TEMP ('semantic-review-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+node eng/common/scripts/skill-eval-semantic-review/local.ts --runtime-root $runtime --output-dir $results --skill azsdk-common-prepare-release-plan --repository OWNER/REPO
+```
+
+The runner saves the input, full prompt, workflow/prompt hashes, draft and submitted
+data, a receipt with actual model/usage and requested tools, and validated report
+files. Existing result directories are never overwritten. `--model` explicitly
+overrides the workflow's model and is disclosed in the receipt. The preparation and
+validation code is the current local candidate; cited skill/Eval content comes from
+the selected immutable `--revision` (default `HEAD`), not uncommitted skill edits.
+
+Local runs do not reproduce the framework system prompt, safe-output service,
+threat detector, Actions network sandbox, hosted authentication, or artifact service.
+They cannot certify production readiness or safety against all prompt injections.
+
+The 2026-10-29 local trial exercised eight real-inference cases: release-plan and SDK
+generation skills, complete no-Eval inventory, stronger/weakened graders, injected
+source instructions, excluded required evidence, and an unchanged-input repeat.
+The grader pair reduced quality from 69 to 43; the no-Eval case scored zero and
+excluded evidence received no score. The release-plan repeat changed from 55 to
+inconclusive because the supplied skill/reference disagree about identifier handling.
+Treat this as a manual advisory pilot with human review, not a stable score threshold.
 
 ## Personal-fork trial
 
