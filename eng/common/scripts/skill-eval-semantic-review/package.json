@@ -1,0 +1,11 @@
+{
+  "name": "@azure-tools/skill-eval-semantic-review",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.14.1"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts"
+  }
+}

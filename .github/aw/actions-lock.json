@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "actions/upload-artifact@v6": {
+      "repo": "actions/upload-artifact",
+      "version": "v6",
+      "sha": "b7c566a772e6b6bfb58ed0dc250532a479d7789f"
+    },
+    "github/gh-aw-actions/setup@v1.0.1": {
+      "repo": "github/gh-aw-actions/setup",
+      "version": "v1.0.1",
+      "sha": "221ba4f4319de6b8e809d1a15528b3ae6a818aa5"
+    }
+  }
+}
