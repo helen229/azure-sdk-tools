@@ -1,0 +1,23 @@
+name: Skill Eval Semantic Review (Pilot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: Skill directory name under .github/skills
+        required: true
+        type: string
+        default: azsdk-common-prepare-release-plan
+
+permissions: {}
+
+jobs:
+  require-pilot-branch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require the reviewed pilot branch
+        run: |
+          printf '%s\n' 'This file only registers manual dispatch on the default branch.'
+          printf '%s\n' 'Select pilot/skill-eval-semantic-review-20261028 to run the reviewed pilot.'
+          exit 1
