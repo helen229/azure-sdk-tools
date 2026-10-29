@@ -4,14 +4,18 @@ on:
   pull_request:
     paths:
       - "eng/common/scripts/skill-eval-coverage/**"
+      - "eng/common/scripts/skill-eval-semantic-review/**"
       - ".github/skill-eval-coverage.json"
       - ".github/workflows/skill-eval*.yml"
+      - ".github/workflows/skill-eval-semantic-review.md"
   push:
     branches: [main]
     paths:
       - "eng/common/scripts/skill-eval-coverage/**"
+      - "eng/common/scripts/skill-eval-semantic-review/**"
       - ".github/skill-eval-coverage.json"
       - ".github/workflows/skill-eval*.yml"
+      - ".github/workflows/skill-eval-semantic-review.md"
   workflow_dispatch:
 
 permissions:
@@ -38,3 +42,14 @@ jobs:
 
       - name: Test scripts
         run: node --test eng/common/scripts/skill-eval-coverage/test/*.test.ts
+
+      - name: Test semantic review scripts
+        run: node --test eng/common/scripts/skill-eval-semantic-review/test/*.test.ts
+
+      - name: Validate the pinned agentic workflow compiler output
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-aw --pin v1.0.1
+          gh aw compile skill-eval-semantic-review --strict --no-check-update --no-logo
+          git diff --exit-code -- .gitattributes .github/aw/actions-lock.json .github/workflows/skill-eval-semantic-review.lock.yml

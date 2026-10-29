@@ -1,3 +1,9 @@
 self-hosted-runner:
   labels:
     - 1ES.Pool=azsdk-pool-github-runners
+
+paths:
+  .github/workflows/skill-eval-semantic-review.lock.yml:
+    ignore:
+      - 'unexpected key "queue" for "concurrency" section'
+      - 'property "workflow_ref" is not defined in object type'
