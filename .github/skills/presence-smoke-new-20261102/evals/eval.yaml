@@ -1,8 +1,0 @@
-name: presence-smoke-new-20261102
-stimuli:
-  - name: summarize-test-input
-    prompt: Summarize the synthetic presence smoke test input.
-    graders:
-      - type: output-contains
-        config:
-          substring: presence
