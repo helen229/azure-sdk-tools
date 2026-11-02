@@ -1,0 +1,9 @@
+name: presence-smoke-existing-20261102
+description: Synthetic starter Eval used only to verify skill-local discovery.
+stimuli:
+  - name: summarize-test-input
+    prompt: Summarize the synthetic presence smoke test input.
+    graders:
+      - type: output-contains
+        config:
+          substring: presence
